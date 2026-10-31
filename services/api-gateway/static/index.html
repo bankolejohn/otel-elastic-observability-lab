@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Observability Demo Shop</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <h1>Observability Demo Shop</h1>
+  <p class="subtitle">frontend &rarr; api-gateway &rarr; orders-service &rarr; (redis, inventory-service &rarr; postgres)</p>
+
+  <section>
+    <h2>Place an order</h2>
+    <form id="order-form">
+      <label>
+        Product:
+        <select id="product-select"></select>
+      </label>
+      <label>
+        Quantity:
+        <input id="quantity-input" type="number" value="1" min="1" />
+      </label>
+      <button type="submit">Place Order</button>
+    </form>
+    <p id="order-result"></p>
+  </section>
+
+  <section>
+    <h2>Recent Orders <button id="refresh-orders">Refresh</button></h2>
+    <table id="orders-table">
+      <thead>
+        <tr><th>ID</th><th>Product</th><th>Qty</th><th>Total</th><th>Status</th><th>Created</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <script src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,91 @@
+# OpenTelemetry Collector config for Stage C.
+#
+# Right now there's exactly one pipeline shape for all three signals:
+#   otlp (receiver) -> memory_limiter -> batch -> debug (exporter)
+#
+# In Stage D, the only change here should be adding an `elasticsearch`
+# exporter alongside/instead of `debug` -- the receivers and processors
+# don't need to change, which is the whole point of putting a Collector
+# in front of the apps instead of pointing each app directly at a backend.
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  # Must run first in every pipeline: protects the Collector itself from
+  # unbounded memory growth if it's ever receiving faster than it can
+  # export (e.g. the backend is slow or down). Without this, a Collector
+  # under load fails by being OOM-killed instead of degrading gracefully.
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 200
+    spike_limit_mib: 50
+
+  # Groups individual spans/metrics/logs into batches before export, instead
+  # of making one export call per item. Dramatically reduces the number of
+  # network calls to whatever backend is downstream.
+  batch:
+    timeout: 5s
+    send_batch_size: 1024
+
+  # Elasticsearch's exporter cannot store cumulative-temporality histograms
+  # (e.g. http.server.duration) -- it silently drops them otherwise (seen in
+  # Stage D verification: "dropping cumulative temporality histogram ..." in
+  # the Collector's own logs). This converts cumulative sums/histograms to
+  # delta temporality before export so they're kept instead of dropped.
+  # Metrics-only; traces/logs pipelines don't reference this processor.
+  cumulativetodelta: {}
+
+  # Stage 2: any log record carrying our own error.category attribute
+  # (set by application code -- see services/*/app/main.py) gets tagged
+  # with elasticsearch.index, which the elasticsearch exporter's "dynamic
+  # index attribute" routing mode reads to send that ONE document
+  # somewhere other than the normal logs-generic.otel-default stream --
+  # into the Streams-style hierarchy's parent, logs.obs-shop.errors.
+  # Everything without that attribute is untouched and keeps going where
+  # it already goes. This is the Collector-side half of "classify at
+  # ingest"; the Elasticsearch-side half (parent -> child streams by
+  # category) is a real ingest pipeline, see otel-collector/../docs.
+  transform/classify_errors:
+    log_statements:
+      - context: log
+        statements:
+          - set(log.attributes["elasticsearch.index"], "logs.obs-shop.errors") where log.attributes["error.category"] != nil
+
+exporters:
+  # "debug" prints whatever it receives to the Collector's own stdout.
+  # Kept alongside the real backend below (Stage D) so we can cross-check
+  # "did the Collector receive/process this at all" against "did it reach
+  # Elasticsearch" independently while verifying.
+  debug:
+    verbosity: detailed
+
+  # Sends to Elastic Cloud. Credentials come from environment variables
+  # (set via the root .env file, loaded by docker compose) -- never
+  # hardcoded here. No `mapping.mode` set: the exporter's current default
+  # is the OTel-native mapping, which writes into logs-*.otel-*,
+  # traces-*.otel-*, metrics-*.otel-* data streams that Kibana's
+  # Observability UI understands natively.
+  elasticsearch:
+    endpoints: ["${env:ELASTIC_ENDPOINT}"]
+    api_key: "${env:ELASTIC_API_KEY}"
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [debug, elasticsearch]
+    metrics:
+      receivers: [otlp]
+      processors: [memory_limiter, cumulativetodelta, batch]
+      exporters: [debug, elasticsearch]
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, transform/classify_errors, batch]
+      exporters: [debug, elasticsearch]

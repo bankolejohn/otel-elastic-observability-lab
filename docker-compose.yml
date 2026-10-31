@@ -1,0 +1,122 @@
+# Shared OpenTelemetry config, reused by every app service via YAML anchor
+# (`<<: *otel-env`) so Stage D only has to change these lines once -- e.g.
+# adding Elastic Cloud credentials -- instead of editing every service block.
+x-otel-env: &otel-env
+  OTEL_TRACES_EXPORTER: otlp
+  OTEL_METRICS_EXPORTER: otlp
+  OTEL_LOGS_EXPORTER: otlp
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+  OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+  # Inject trace_id/span_id into the plain-text log lines each service already
+  # prints, so a log line can be matched back to the trace it happened in.
+  OTEL_PYTHON_LOG_CORRELATION: "true"
+  # Default is 60000ms; shortened so metrics show up quickly while poking
+  # around manually, instead of waiting a full minute.
+  OTEL_METRIC_EXPORT_INTERVAL: "10000"
+  OTEL_RESOURCE_ATTRIBUTES: "service.namespace=obs-demo-shop,deployment.environment=local"
+
+services:
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.153.0
+    container_name: obs-otel-collector
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./otel-collector/config.yaml:/etc/otel-collector-config.yaml:ro
+    environment:
+      # Sourced from the root .env file (gitignored). docker compose
+      # substitutes these here; the Collector's own config.yaml then
+      # reads them via ${env:...} at its own startup.
+      ELASTIC_ENDPOINT: ${ELASTIC_ENDPOINT}
+      ELASTIC_API_KEY: ${ELASTIC_API_KEY}
+    ports:
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+    # No container healthcheck: the contrib image is a distroless-style
+    # static binary with no shell/curl/wget to run one against. Startup
+    # ordering below is "started", not "healthy" -- fine here because the
+    # OTLP exporters in each app service retry/back off on their own if
+    # the Collector isn't reachable yet (see stage-c doc for how we
+    # confirmed that).
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: obs-postgres
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_DB: appdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d appdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: obs-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  inventory-service:
+    build: ./services/inventory-service
+    container_name: obs-inventory-service
+    environment:
+      DATABASE_URL: postgresql+psycopg2://app:app@postgres:5432/appdb
+      <<: *otel-env
+      OTEL_SERVICE_NAME: inventory-service
+    ports:
+      - "8002:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      otel-collector:
+        condition: service_started
+
+  orders-service:
+    build: ./services/orders-service
+    container_name: obs-orders-service
+    environment:
+      DATABASE_URL: postgresql+psycopg2://app:app@postgres:5432/appdb
+      REDIS_URL: redis://redis:6379/0
+      INVENTORY_SERVICE_URL: http://inventory-service:8000
+      <<: *otel-env
+      OTEL_SERVICE_NAME: orders-service
+    ports:
+      - "8001:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      inventory-service:
+        condition: service_started
+      otel-collector:
+        condition: service_started
+
+  api-gateway:
+    build: ./services/api-gateway
+    container_name: obs-api-gateway
+    environment:
+      ORDERS_SERVICE_URL: http://orders-service:8000
+      INVENTORY_SERVICE_URL: http://inventory-service:8000
+      <<: *otel-env
+      OTEL_SERVICE_NAME: api-gateway
+    ports:
+      - "8000:8000"
+    depends_on:
+      - orders-service
+      - inventory-service
+      - otel-collector
+
+volumes:
+  pgdata:

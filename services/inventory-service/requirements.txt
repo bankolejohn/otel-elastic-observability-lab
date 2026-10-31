@@ -1,0 +1,14 @@
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+sqlalchemy==2.0.35
+psycopg2-binary==2.9.9
+pydantic==2.9.2
+
+# OpenTelemetry (Stage B). Left unpinned on purpose -- see ADR-0007:
+# the instrumentation packages move fast and must stay compatible with
+# whatever version of fastapi/sqlalchemy is actually installed above.
+opentelemetry-distro
+opentelemetry-exporter-otlp
+opentelemetry-instrumentation-fastapi
+opentelemetry-instrumentation-sqlalchemy
+opentelemetry-instrumentation-logging
