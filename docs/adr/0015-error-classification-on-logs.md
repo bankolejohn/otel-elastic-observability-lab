@@ -78,3 +78,5 @@ If the query_timeout/pool_exhausted race above ever needs to be resolved
 for real (not just understood), stagger the timeout budgets deliberately
 (caller timeout > callee timeout, with real margin) rather than tuning
 them to coincidentally avoid the race.
+
+**Update 2026-11-01:** done -- see ADR-0018.

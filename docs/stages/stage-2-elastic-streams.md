@@ -184,6 +184,8 @@ on microsecond-level timing, not a classification bug. See ADR-0015.
 Real production systems should stagger these deliberately (caller
 timeout meaningfully larger than callee timeout); this project's
 identical values made the race visible rather than hidden.
+**Update 2026-11-01:** fixed deliberately, see ADR-0018 -- the same
+20-request burst that produced a 504/503 mix now produces zero 504s.
 
 **The "generic 500 masks everything" problem from Stage G, actually
 fixed this time.** Stage G documented but deliberately didn't fix 3

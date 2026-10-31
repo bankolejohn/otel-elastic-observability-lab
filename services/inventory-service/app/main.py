@@ -22,9 +22,19 @@ tracer = trace.get_tracer("inventory-service.tracer")
 
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+psycopg2://app:app@localhost:5432/appdb")
 
-# pool_size/max_overflow are deliberately small and fixed -- later, in the chaos stage,
-# this is exactly the knob we'll use to simulate "pool exhausted" errors on purpose.
-engine = create_engine(DATABASE_URL, pool_size=5, max_overflow=0, pool_timeout=5)
+# pool_size/max_overflow are deliberately small and fixed -- this is exactly
+# the knob Stage G uses to simulate "pool exhausted" errors on purpose.
+#
+# pool_timeout is deliberately LOWER than orders-service's 5.0s httpx
+# timeout to this service's /reserve endpoint (see orders-service/app/main.py),
+# with a real margin (3s vs 5s), not an accident. Stage G and Stage 2 both
+# found that when these two timeouts were numerically equal, a single
+# pool-exhaustion event could race and get classified as query_timeout
+# instead, depending on which side's clock fired first (see ADR-0015,
+# ADR-0018). Keeping the callee's own timeout clearly shorter than the
+# caller's means inventory-service's own, more specific error wins the
+# race reliably, instead of leaving it to chance.
+engine = create_engine(DATABASE_URL, pool_size=5, max_overflow=0, pool_timeout=3)
 
 app = FastAPI(title="inventory-service")
 
@@ -143,13 +153,16 @@ def reserve_product(product_id: int, req: ReserveRequest):
                     # disagree. See the Stage G doc for how to diagnose this.
                     conn.execute(text("SELECT pg_sleep(8)"))
                 elif mode == "pool_exhausted":
-                    # Holds this connection open well past normal; with
-                    # pool_size=5/max_overflow=0 (ADR-0004), a handful of
-                    # concurrent requests like this one will exhaust the
-                    # pool -- the FAILURE shows up on whichever *other*
-                    # concurrent request can't get a connection, not
-                    # necessarily this one.
-                    conn.execute(text("SELECT pg_sleep(3)"))
+                    # Holds this connection open well past pool_timeout (3s,
+                    # see the engine comment above); with pool_size=5/
+                    # max_overflow=0 (ADR-0004), a handful of concurrent
+                    # requests like this one will exhaust the pool -- the
+                    # FAILURE shows up on whichever *other* concurrent
+                    # request can't get a connection, not necessarily this
+                    # one. 4s hold vs 3s pool_timeout is a deliberate
+                    # margin so a queued waiter reliably times out instead
+                    # of narrowly squeaking through.
+                    conn.execute(text("SELECT pg_sleep(4)"))
 
                 row = conn.execute(
                     text("SELECT stock FROM inventory.products WHERE product_id = :pid FOR UPDATE"),

@@ -40,6 +40,7 @@ Don't write one for things with no real alternative (e.g. "we used Python's
 | [0015](0015-error-classification-on-logs.md) | Error classification lives on log records (`extra={"error.category": ...}`), not just span attributes | Accepted |
 | [0016](0016-collector-side-dynamic-routing.md) | Collector-side dynamic routing into a dedicated hierarchy, not overriding Elastic's managed log template | Accepted |
 | [0017](0017-explicit-keyword-mappings-for-ml.md) | Explicit keyword mappings for classifier fields -- `flattened` silently breaks ML datafeeds | Accepted |
+| [0018](0018-stagger-timeout-budgets.md) | Staggered the query_timeout/pool_exhausted timeout race deliberately | Accepted |
 
 ## Template
 

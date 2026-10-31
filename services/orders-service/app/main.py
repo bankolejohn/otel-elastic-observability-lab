@@ -108,6 +108,12 @@ def create_order(req: OrderRequest):
     # classification here instead -- now that the goal is sorting *known*
     # categories into the Streams hierarchy, not discovering an unknown one.
     try:
+        # timeout=5.0 is deliberately LARGER than inventory-service's own
+        # pool_timeout=3 (see inventory-service/app/main.py) with real
+        # margin, so inventory-service's own, more specific pool_exhausted
+        # error wins the race and reaches us as a proper 503, instead of
+        # this timeout firing first and masking it as a generic
+        # query_timeout. See ADR-0015 and ADR-0018.
         reserve_resp = httpx.post(
             f"{INVENTORY_SERVICE_URL}/products/{req.product_id}/reserve",
             json={"quantity": req.quantity},
