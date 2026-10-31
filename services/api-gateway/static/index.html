@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <title>Observability Demo Shop</title>
   <link rel="stylesheet" href="/style.css" />
+  <!-- Loaded as a module, before app.js, so fetch() instrumentation is
+       registered before app.js's own load-time fetch() calls happen. -->
+  <script type="module" src="/otel-web.js"></script>
 </head>
 <body>
   <h1>Observability Demo Shop</h1>

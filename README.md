@@ -18,7 +18,15 @@ detection.
 | G | **Done** | Inject chaos (slow responses, DB timeouts, dependency failures) and diagnose it using the pipeline | [stage-g-chaos-engineering.md](docs/stages/stage-g-chaos-engineering.md) |
 | 2 | **Done** | Apply the Elastic Streams / ML pattern from the reference Medium article on top of this | [stage-2-elastic-streams.md](docs/stages/stage-2-elastic-streams.md) |
 
-**The full roadmap is now complete.**
+**The originally-scoped roadmap is complete.** Post-completion
+extensions, picked up afterward:
+
+| Stage | Status | What it is | Docs |
+|---|---|---|---|
+| H | **Done** | Fix the query_timeout/pool_exhausted timeout race (ADR-0018) + browser/RUM instrumentation | [stage-h-browser-instrumentation.md](docs/stages/stage-h-browser-instrumentation.md) |
+| I | Not started | Live-create the three alert rules via Kibana's API | — |
+| J | Not started | Build a real Kibana dashboard | — |
+| K | Ongoing | Let the ML jobs (`service_request_spikes`, `obs_shop_error_spikes`) mature with real history | — |
 
 ## Documentation map
 

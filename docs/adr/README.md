@@ -41,6 +41,7 @@ Don't write one for things with no real alternative (e.g. "we used Python's
 | [0016](0016-collector-side-dynamic-routing.md) | Collector-side dynamic routing into a dedicated hierarchy, not overriding Elastic's managed log template | Accepted |
 | [0017](0017-explicit-keyword-mappings-for-ml.md) | Explicit keyword mappings for classifier fields -- `flattened` silently breaks ML datafeeds | Accepted |
 | [0018](0018-stagger-timeout-budgets.md) | Staggered the query_timeout/pool_exhausted timeout race deliberately | Accepted |
+| [0019](0019-browser-instrumentation-dependency-pinning.md) | Browser OTel via CDN ESM, CORS on the Collector, and pinning `@opentelemetry/api` per-package | Accepted |
 
 ## Template
 

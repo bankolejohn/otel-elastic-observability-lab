@@ -5,7 +5,8 @@ in place as each stage adds to the system. For the narrative of how we got
 here and why, see `docs/stages/`. For why specific non-obvious choices were
 made, see `docs/adr/`.
 
-Last updated: end of Stage 2 (2026-10-31) -- this is the final planned stage.
+Last updated: Stage H (2026-11-01) -- a post-completion extension; the
+originally-scoped roadmap (A-G, 2) finished at the end of Stage 2.
 
 ## System diagram
 
@@ -30,11 +31,14 @@ Last updated: end of Stage 2 (2026-10-31) -- this is the final planned stage.
                   orders.orders ◀──┤           ├──▶ inventory.products
                                    └───────────┘
 
-   api-gateway, orders-service, inventory-service
-          │ OTLP/gRPC (traces, metrics, logs)
-          ▼
+Telemetry fan-in to the Collector (both OTLP ports feed the same pipelines):
+  - browser (frontend, OTel Web SDK) --OTLP/HTTP, CORS-allowed--> :4318
+    (traceparent on fetch() calls to :8000/api/* joins this to the
+    backend's own trace -- see Stage H)
+  - api-gateway, orders-service, inventory-service --OTLP/gRPC--> :4317
+
    ┌─────────────────┐
-   │  otel-collector  │  :4317 (grpc) / :4318 (http)
+   │  otel-collector  │  :4317 (grpc) / :4318 (http, CORS-allowed for :8000)
    │  traces/logs:  otlp→memory_limiter→batch→[debug, elasticsearch]
    │  metrics:      otlp→memory_limiter→cumulativetodelta→batch→[debug, elasticsearch]
    └────────┬────────┘
@@ -134,6 +138,15 @@ OTel-native logs stream:
   (`obs_shop_error_spikes`) runs over the whole hierarchy the same way
   Stage F's job did, with the same under-trained-model limitation found
   again. See `docs/stages/stage-2-elastic-streams.md`.
+- **Browser instrumentation** (Stage H, post-completion extension):
+  `services/api-gateway/static/otel-web.js` instruments the frontend with
+  the OTel Web SDK (document-load + fetch spans), exporting directly to
+  the Collector's OTLP/HTTP receiver (CORS-allowed for `:8000`). Trace
+  context propagates from the browser into api-gateway, joining one
+  trace that genuinely starts in the browser -- confirmed with a real
+  29-span trace. Getting this working took five real, sequential
+  dependency/API-version bugs; see ADR-0019 and
+  `docs/stages/stage-h-browser-instrumentation.md`.
 
 ## Components
 
@@ -173,6 +186,7 @@ services/
   api-gateway/
     app/main.py
     static/                  # frontend: index.html, app.js, style.css
+    static/otel-web.js        # browser OTel instrumentation (Stage H)
     Dockerfile
     requirements.txt
   orders-service/

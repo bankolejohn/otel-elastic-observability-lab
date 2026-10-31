@@ -15,6 +15,16 @@ receivers:
         endpoint: 0.0.0.0:4317
       http:
         endpoint: 0.0.0.0:4318
+        cors:
+          # The frontend (services/api-gateway/static/otel-web.js) sends
+          # spans directly from the browser to this receiver -- a genuinely
+          # cross-origin request (page is on :8000, this is :4318), so it
+          # needs an explicit allow-list, not just "it's all docker compose
+          # so it's fine" (CORS is enforced by the browser, not Docker).
+          allowed_origins:
+            - "http://localhost:8000"
+          allowed_headers:
+            - "*"
 
 processors:
   # Must run first in every pipeline: protects the Collector itself from

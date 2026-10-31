@@ -420,6 +420,58 @@ catch-all attribute fields, specifically *not* used for
 `error.category`/`service.name` once their need for aggregation became
 clear — see ADR-0017.
 
+## Stage H terms (browser instrumentation, a post-completion extension)
+
+**CDN-as-bundler (esm.sh)**
+A service that resolves npm package names into browser-ready ES modules
+on demand over HTTP, so `import` statements in plain `<script
+type="module">` code can reference npm packages directly, with no local
+install or build step. Handles transitive dependencies automatically --
+but, left to its own defaults, may resolve the *same* shared dependency
+to *different* versions/instances for different top-level packages,
+which matters a lot for libraries (like OpenTelemetry's API) that rely
+on one shared global registry.
+*In this project:* `services/api-gateway/static/otel-web.js` imports
+everything this way; see ADR-0019 for the real problem this caused and
+the fix (`?deps=` pinning).
+
+**Global registry (singleton) pattern**
+A design where a library expects exactly one shared instance of itself
+to exist process-wide, reached via module-level functions
+(`setGlobalTracerProvider`/`trace.getTracer()`) rather than passed
+explicitly between every caller and callee. Works perfectly inside one
+bundled application; breaks silently if two different copies of the same
+module end up loaded side by side, because "global" then means two
+different things depending on which copy of the code asks.
+*In this project:* `@opentelemetry/api`'s trace/propagation/context
+registry — exactly what broke when esm.sh handed different packages
+different copies of it (ADR-0019, bug #3).
+
+**Diagnostic (silent-by-default) logging**
+A library's own internal logger, used for "this isn't working and here's
+why" messages, deliberately set to do nothing by default so a correctly-
+functioning production system isn't flooded with noise. The tradeoff:
+when something *is* wrong, the default silence looks identical to
+"nothing is wrong, there's just nothing to report."
+*In this project:* `@opentelemetry/api`'s `diag` object. Its default
+no-op logger is exactly what made bug #3 (the registry mismatch) produce
+zero visible errors anywhere — enabling `DiagConsoleLogger` was the only
+way to see what was actually failing.
+
+**Dependency pinning across independently-resolved CDN imports**
+Forcing two or more separately-imported packages to resolve one specific
+shared dependency to the exact same version/URL, instead of letting each
+resolve it independently (which can silently diverge). esm.sh's
+mechanism for this is a `?deps=pkg@version` query parameter on the
+*importing* package's URL.
+*In this project:* applied narrowly, only to the packages that actually
+touch OpenTelemetry's global registry — applying it universally broke a
+*different* package's unrelated dependency resolution (ADR-0019, bug #4),
+which is itself the core lesson: pin precisely what needs pinning, not
+everything that happens to share a name.
+
 ## Coming in later stages
 
-(none — this is the last planned stage)
+(none — the originally-scoped roadmap is complete; this and further
+entries belong to post-completion extensions, tracked as Stage H onward
+in `README.md`)
