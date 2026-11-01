@@ -24,7 +24,7 @@ extensions, picked up afterward:
 | Stage | Status | What it is | Docs |
 |---|---|---|---|
 | H | **Done** | Fix the query_timeout/pool_exhausted timeout race (ADR-0018) + browser/RUM instrumentation | [stage-h-browser-instrumentation.md](docs/stages/stage-h-browser-instrumentation.md) |
-| I | Not started | Live-create the three alert rules via Kibana's API | — |
+| I | **Done** | Live-create the three alert rules via Kibana's API | [stage-i-alert-rules.md](docs/stages/stage-i-alert-rules.md) |
 | J | Not started | Build a real Kibana dashboard | — |
 | K | Ongoing | Let the ML jobs (`service_request_spikes`, `obs_shop_error_spikes`) mature with real history | — |
 

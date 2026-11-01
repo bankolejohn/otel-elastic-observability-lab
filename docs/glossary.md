@@ -470,6 +470,25 @@ touch OpenTelemetry's global registry — applying it universally broke a
 which is itself the core lesson: pin precisely what needs pinning, not
 everything that happens to share a name.
 
+## Stage I terms
+
+**Kibana Alerting rule**
+A scheduled check (own interval, independent of any dashboard being
+open) that evaluates a condition and tracks a fire/recover status over
+time, optionally triggering notification actions (email, Slack, etc.).
+Created and managed via Kibana's own API (`/api/alerting/rule`),
+distinct from the Elasticsearch-level `_ml` or `_ingest` APIs used in
+earlier stages — this is specifically a Kibana-side concept, reachable
+only via the Kibana endpoint, not the Elasticsearch one.
+*In this project:* three rules — a hard-threshold volume check, a
+pipeline-health check, and an ML-anomaly check — created via
+`POST $KIBANA_ENDPOINT/api/alerting/rule`. See `docs/stages/stage-i-alert-rules.md`.
+
+**`kbn-xsrf` header**
+A required header (any truthy value, conventionally `"true"`) on
+non-`GET` requests to Kibana's APIs — a CSRF protection measure specific
+to Kibana, not something the Elasticsearch API needs.
+
 ## Coming in later stages
 
 (none — the originally-scoped roadmap is complete; this and further

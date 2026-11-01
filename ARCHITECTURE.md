@@ -5,7 +5,7 @@ in place as each stage adds to the system. For the narrative of how we got
 here and why, see `docs/stages/`. For why specific non-obvious choices were
 made, see `docs/adr/`.
 
-Last updated: Stage H (2026-11-01) -- a post-completion extension; the
+Last updated: Stage I (2026-11-01) -- a post-completion extension; the
 originally-scoped roadmap (A-G, 2) finished at the end of Stage 2.
 
 ## System diagram
@@ -147,6 +147,14 @@ OTel-native logs stream:
   29-span trace. Getting this working took five real, sequential
   dependency/API-version bugs; see ADR-0019 and
   `docs/stages/stage-h-browser-instrumentation.md`.
+- **Live alert rules** (Stage I, post-completion extension): three
+  Kibana Alerting rules, created via its API (`KIBANA_ENDPOINT`, a
+  separate host from `ELASTIC_ENDPOINT`) -- a hard-threshold volume
+  alert on `logs.obs-shop.errors*`, a pipeline-health check on
+  `logs-generic.otel-default`, and an ML-anomaly alert on
+  `obs_shop_error_spikes`. Verified firing for real: a deliberate error
+  burst flipped the volume alert to `active`. See
+  `docs/stages/stage-i-alert-rules.md`.
 
 ## Components
 
