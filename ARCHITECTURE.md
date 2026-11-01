@@ -5,7 +5,7 @@ in place as each stage adds to the system. For the narrative of how we got
 here and why, see `docs/stages/`. For why specific non-obvious choices were
 made, see `docs/adr/`.
 
-Last updated: Stage I (2026-11-01) -- a post-completion extension; the
+Last updated: Stage K (2026-11-01) -- a post-completion extension; the
 originally-scoped roadmap (A-G, 2) finished at the end of Stage 2.
 
 ## System diagram
@@ -155,6 +155,11 @@ OTel-native logs stream:
   `obs_shop_error_spikes`. Verified firing for real: a deliberate error
   burst flipped the volume alert to `active`. See
   `docs/stages/stage-i-alert-rules.md`.
+- **ML maturity** (Stage K, ongoing): `scripts/steady_traffic.sh` runs
+  continuously in the background, placing one order every 15-30s, so
+  both ML jobs accumulate real history instead of relying on manual test
+  bursts. Not expected to be "done" at any specific point -- check back
+  after real time has passed. See `docs/stages/stage-k-ml-maturity.md`.
 
 ## Components
 
@@ -186,6 +191,8 @@ chain`.
 .env                          # gitignored -- ELASTIC_ENDPOINT, ELASTIC_API_KEY (local only)
 .env.example                  # committed template, no real values
 docker-compose.yml
+scripts/
+  steady_traffic.sh          # background traffic generator (Stage K)
 otel-collector/
   config.yaml                # receiver/processor/exporter pipeline config
 db/
