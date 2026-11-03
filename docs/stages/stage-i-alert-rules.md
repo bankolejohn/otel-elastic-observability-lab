@@ -19,7 +19,8 @@ while Kibana is open, since the user already had it open.
 
 ## How it works
 
-Found the real Kibana endpoint (`https://first-test-demo-shop-abd76a.kb.us-central1.gcp.elastic.cloud`)
+Found the real Kibana endpoint (the `https://<deployment>.kb.<region>.<provider>.elastic.cloud`
+host, kept in `.env` as `KIBANA_ENDPOINT`, not committed)
 this way, confirmed it works with the same Elasticsearch API key
 (`GET /api/status` → 200), then checked `GET /api/alerting/rule_types`
 for the real, authoritative parameter requirements before creating
