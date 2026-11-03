@@ -57,5 +57,5 @@ postmortems (where it all comes together and the learning sticks).
 ## Status
 - [x] 1. SLIs/SLOs defined -- `docs/slo.md`, validated live (100% healthy, 56% under injected failure)
 - [~] 2. RED dashboard -- queries built & verified (`docs/stages/stage-j-red-dashboard.md`); Kibana UI assembly pending (manual)
-- [ ] 3. First incident drill + postmortem
+- [~] 3. Incident drills -- template + worked example ready (`docs/incidents/`); first *live blind* drill pending (needs the dashboard up)
 - [ ] 4. At least one alert threshold tuned based on a drill
