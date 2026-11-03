@@ -1,0 +1,105 @@
+# Stage J — The RED dashboard (SRE practice plan, point 2)
+
+Status: **Queries built & verified; panels to be assembled in Kibana UI**
+
+The "RED method" (Rate, Errors, Duration) is a standard way to summarize the
+health of a request-serving service on one screen. This dashboard is built to
+pass the SRE test: *paged at 3am, can it tell you within 30 seconds whether
+things are broken and roughly where?*
+
+All three panel queries below were tested against real data on 2026-11-03
+before being written down -- and all three correctly show the fingerprint of
+a 10-failure test burst at 10:52 (Rate spikes to 13, Errors drops to 23%
+availability, Duration's successful-order latency rises that same minute).
+The three panels tell one incident's story from three angles -- which is the
+whole point.
+
+## Why ES|QL panels (and the one manual step that remains)
+
+Each panel is a Lens visualization in **ES|QL mode**. The queries are
+verified; the only thing left is assembling them in Kibana's UI, because
+Lens's hand-authored panel JSON is an internal, unstable format not safe to
+POST blind (the same reason the Stage H browser SDK fought back -- "experimental
+and mostly unspecified" territory). Building them in the UI means Kibana
+validates and renders each one as you go.
+
+## How to build it
+
+Kibana -> Dashboards -> Create dashboard -> Create visualization -> switch the
+editor to **ES|QL**. Paste each query, pick the suggested chart type (noted
+per panel), save to the dashboard. Set the dashboard's time range to
+"Last 1 hour" and auto-refresh to ~30s.
+
+### Panel 1 — RATE (throughput): "are we serving requests?"
+Bar or area chart, X = `minute`, Y = `orders`.
+```esql
+FROM traces-generic.otel-default
+| WHERE resource.attributes.service.name == "api-gateway" AND name == "POST /api/orders"
+| EVAL minute = DATE_TRUNC(1 minute, @timestamp)
+| STATS orders = COUNT(*) BY minute
+| SORT minute ASC
+```
+*What it tells you:* a sudden drop to zero = we've stopped taking orders at
+all (hard outage / upstream down). A spike = unusual load (or, in a drill, a
+burst of retries).
+
+### Panel 2 — ERRORS (availability vs SLO): "are requests succeeding?"
+Line chart, X = `minute`, Y = `availability_pct`. The key move: this is
+plotted against SLO 1's target of 99% -- add a static reference line at 99 in
+the Lens panel options so the breach is visible at a glance.
+```esql
+FROM traces-generic.otel-default
+| WHERE resource.attributes.service.name == "api-gateway" AND name == "POST /api/orders"
+| EVAL minute = DATE_TRUNC(1 minute, @timestamp),
+       is_bad = CASE(attributes.http.status_code >= 500, 1, 0)
+| STATS total = COUNT(*), bad = SUM(is_bad) BY minute
+| EVAL availability_pct = ROUND(100.0 * (total - bad) / total, 2)
+| SORT minute ASC
+```
+*What it tells you:* the line dipping below the 99% reference line = SLO 1 is
+breaching *right now*. This is the single most important panel on the board --
+it's the SLO, live.
+
+### Panel 3 — DURATION (latency percentiles): "are requests fast?"
+Line chart, X = `minute`, two series: `p50` and `p95`. Add a static reference
+line at 500 (SLO 2's latency threshold, in ms).
+```esql
+FROM traces-generic.otel-default
+| WHERE resource.attributes.service.name == "api-gateway"
+    AND name == "POST /api/orders" AND attributes.http.status_code == 200
+| EVAL minute = DATE_TRUNC(1 minute, @timestamp), ms = duration / 1000000
+| STATS p50 = PERCENTILE(ms, 50), p95 = PERCENTILE(ms, 95) BY minute
+| SORT minute ASC
+```
+*What it tells you:* p95 crossing the 500ms line = SLO 2 breaching. p50 and
+p95 diverging sharply = *some* requests are slow while most are fine (a tail
+problem -- e.g. one slow dependency, or pool contention), which is a very
+different diagnosis than *both* rising together (everything is slow -- e.g.
+the DB is struggling).
+
+## Optional 4th panel — error breakdown by category
+Not part of classic RED, but cheap and very useful during a drill: *which*
+kind of error is spiking. Bar chart, X = `category`, Y = `count`.
+```esql
+FROM logs.obs-shop.errors*
+| STATS count = COUNT(*) BY category = attributes.error.category
+| SORT count DESC
+```
+*What it tells you:* turns "errors are up" into "pool_exhausted errors are up
+on inventory-service" -- the jump from *symptom* to *cause*, straight off the
+dashboard. This is the payoff of the whole Stage 2 Streams hierarchy.
+
+## How to read it as a whole (the 3am test)
+1. **Rate** flat/normal but **Errors** dropping -> we're serving requests but
+   failing them -> app-level fault (look at panel 4 for which category).
+2. **Rate** cratered -> we've stopped serving at all -> something upstream /
+   total outage.
+3. **Errors** fine but **Duration** p95 climbing -> not failing yet, but
+   degrading -> the early-warning case, the one you want to catch *before* it
+   becomes errors.
+
+## Status
+- [x] All three RED queries built and verified against real data
+- [x] Confirmed they reflect a real injected incident (the 10:52 burst)
+- [ ] Panels assembled in the Kibana UI (manual step, user)
+- [ ] Reference lines added (99% on Errors, 500ms on Duration)

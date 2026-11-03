@@ -55,7 +55,7 @@ Day 1: SLOs/SLIs. Day 1-2: RED dashboard. Rest of the week: incident drills +
 postmortems (where it all comes together and the learning sticks).
 
 ## Status
-- [ ] 1. SLIs/SLOs defined
-- [ ] 2. RED dashboard built
+- [x] 1. SLIs/SLOs defined -- `docs/slo.md`, validated live (100% healthy, 56% under injected failure)
+- [~] 2. RED dashboard -- queries built & verified (`docs/stages/stage-j-red-dashboard.md`); Kibana UI assembly pending (manual)
 - [ ] 3. First incident drill + postmortem
 - [ ] 4. At least one alert threshold tuned based on a drill
