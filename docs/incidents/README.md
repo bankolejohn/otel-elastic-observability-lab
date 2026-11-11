@@ -60,3 +60,5 @@ The whole value is in diagnosing *without already knowing the answer*, so:
 ## Drills so far
 - [2026-11-11 drill 1 — connection_failed](2026-11-11-drill-1-connection-failed.md) — partially correct
 - [2026-11-11 drill 2 — pool_exhausted](2026-11-11-drill-2-pool-exhausted.md) — correct
+- [2026-11-11 drill 3 — slow (silent fault)](2026-11-11-drill-3-slow.md) — correct; new latency alert fired, error alert correctly silent
+- [Alert review](alert-review-2026-11-11.md)

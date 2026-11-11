@@ -44,5 +44,5 @@ The SLI separates healthy from broken cleanly, so it is a sound basis for an ale
 ## Status
 - [x] Reviewed when and whether each rule fired
 - [x] Identified the blind spot (no latency alert) and the scale limits of the count rule
-- [ ] Latency alert created
-- [ ] Validated by a `slow` drill
+- [x] Latency alert created (`kibana/rules/order-latency-slo.json`)
+- [x] Validated by a `slow` drill (drill 3): the latency rule fired 74s after injection and recovered when the window drained; the error-volume rule stayed silent because there were 0 errors across 314 orders. See `2026-11-11-drill-3-slow.md`.
