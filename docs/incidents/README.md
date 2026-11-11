@@ -52,3 +52,10 @@ The whole value is in diagnosing *without already knowing the answer*, so:
 - [`example-drill-pool-exhaustion.md`](example-drill-pool-exhaustion.md) — a
   fully worked example, so you can see the shape of a good one before running
   your own
+
+## Running a blind drill
+
+`./scripts/run_blind_drill.sh &` picks one of `slow`, `query_timeout`, `connection_failed`, `pool_exhausted` at random, injects it for ~4 minutes under concurrent load, and resets chaos mode automatically. The chosen fault is sealed in `/tmp/obs-drill-answer.txt`; do not read it until a root cause has been committed to.
+
+## Drills so far
+- [2026-11-11 drill 1 — connection_failed](2026-11-11-drill-1-connection-failed.md)
