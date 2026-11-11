@@ -52,7 +52,7 @@ One trace (`38f3ca016ff766deeda1ae36a2a3f8ea`, started 10:17:56) showed the casc
 ## Action items
 - [ ] Dashboard (point 2): the Errors panel should plot only `availability_pct`, on a 0-100 axis with a line at 99.
 - [ ] Dashboard (point 2): add the error-category breakdown panel and set its time range to the incident window.
-- [ ] Chaos tooling: give the bad engine in `chaos.py` a short `pool_timeout` so `connection_failed` stays a clean `connection_failed`.
+- [x] Chaos tooling: give the bad engine in `chaos.py` a short `pool_timeout` so `connection_failed` stays a clean `connection_failed`. **Done and verified:** a comparable concurrent burst (60 requests) now logs 61 `connection_failed`, 0 `pool_exhausted`, 0 `query_timeout` (drill 1 had 807 / 22 / 149). This confirms the pool-queueing hypothesis.
 - [ ] Responder habit: record a timestamp at detection and at root cause; start every diagnosis with `STATS COUNT(*) BY category` over the window.
 - [ ] Point 4: check whether the Stage I volume alert fired, and when, versus detection.
 

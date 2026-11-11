@@ -50,10 +50,18 @@ def get_bad_engine(real_database_url: str):
     global _bad_engine
     if _bad_engine is None:
         bad_url = real_database_url.replace(":5432/", ":5499/")
+        # Pool is deliberately generous with a short pool_timeout. An earlier
+        # version used pool_size=1 and left pool_timeout at SQLAlchemy's 30s
+        # default; under concurrent load, requests queued for that single slot
+        # (a 30s `connect` span was seen in a real drill trace) and surfaced
+        # as pool_exhausted / query_timeout instead of connection_failed.
+        # That made this chaos mode emit misleading secondary signals. The
+        # pool must never be what fails here -- the refused connection is.
         _bad_engine = create_engine(
             bad_url,
-            pool_size=1,
+            pool_size=20,
             max_overflow=0,
+            pool_timeout=1,
             connect_args={"connect_timeout": 2},
         )
     return _bad_engine
