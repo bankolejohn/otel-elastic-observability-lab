@@ -1,0 +1,44 @@
+{
+  "name": "obs-shop error-routing pipeline health",
+  "rule_type_id": ".es-query",
+  "consumer": "stackAlerts",
+  "schedule": {
+    "interval": "5m"
+  },
+  "params": {
+    "searchType": "esQuery",
+    "index": [
+      "logs-generic.otel-default"
+    ],
+    "timeField": "@timestamp",
+    "esQuery": "{\"query\":{\"exists\":{\"field\":\"attributes.error.category\"}}}",
+    "size": 100,
+    "timeWindowSize": 10,
+    "timeWindowUnit": "m",
+    "thresholdComparator": ">",
+    "threshold": [
+      0
+    ],
+    "excludeHitsFromPreviousRun": true,
+    "aggType": "count",
+    "groupBy": "all"
+  },
+  "actions": [
+    {
+      "group": "query matched",
+      "id": "Elastic-Cloud-SMTP",
+      "params": {
+        "to": [
+          "<alert-recipient-email>"
+        ],
+        "subject": "[obs-shop] ALERT: {{rule.name}}",
+        "message": "{{rule.name}} is firing.\n\n{{context.message}}\n\nOpen Kibana to investigate (start with the obs-shop RED dashboard v2)."
+      },
+      "frequency": {
+        "summary": false,
+        "notify_when": "onActionGroupChange",
+        "throttle": null
+      }
+    }
+  ]
+}

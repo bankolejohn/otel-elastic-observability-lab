@@ -1,0 +1,40 @@
+{
+  "name": "obs-shop ML anomaly alert (request volume)",
+  "rule_type_id": "xpack.ml.anomaly_detection_alert",
+  "consumer": "stackAlerts",
+  "schedule": {
+    "interval": "1m"
+  },
+  "params": {
+    "jobSelection": {
+      "jobIds": [
+        "service_request_spikes"
+      ],
+      "groupIds": []
+    },
+    "severity": 50,
+    "resultType": "record",
+    "includeInterim": false,
+    "topNBuckets": 1,
+    "lookbackInterval": null,
+    "kqlQueryString": null
+  },
+  "actions": [
+    {
+      "group": "anomaly_score_match",
+      "id": "Elastic-Cloud-SMTP",
+      "params": {
+        "to": [
+          "<alert-recipient-email>"
+        ],
+        "subject": "[obs-shop] ALERT: {{rule.name}}",
+        "message": "{{rule.name}} is firing.\n\n{{context.message}}\n\nOpen Kibana to investigate (start with the obs-shop RED dashboard v2)."
+      },
+      "frequency": {
+        "summary": false,
+        "notify_when": "onActionGroupChange",
+        "throttle": null
+      }
+    }
+  ]
+}
