@@ -113,3 +113,7 @@ Stage G: chaos. Fault injection (slow responses, DB timeouts, dependency
 failures) and using everything built so far — traces, correlated logs,
 this ML job, and eventually a hard-threshold check — to diagnose what
 broke and why.
+
+## Update 2026-11-11: it did learn
+
+The score of 0.0 above was a young model. By 2026-11-11 `service_request_spikes` had 598 non-empty buckets and flagged real bursts (orders-service: 879 spans/min vs a typical ~8, score 99.4). It detects unusual *volume*, not failures as such. See `docs/retrospective.md`.

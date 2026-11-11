@@ -97,6 +97,8 @@ operate it, without reconstructing any of it from memory:
   each non-obvious choice, with alternatives and trade-offs.
 - **[`docs/glossary.md`](docs/glossary.md)** — every concept defined and tied
   back to where it actually shows up in the code.
+- **[`docs/retrospective.md`](docs/retrospective.md)** — did the project hit its
+  objective? An evidence-based audit, including the gaps.
 - **[`docs/esql-cheatsheet.md`](docs/esql-cheatsheet.md)** — learn the ES|QL
   queries used throughout, with exercises, an answer key, and learning links.
 - **[`docs/slo.md`](docs/slo.md)** and **[`docs/incidents/`](docs/incidents/)** —

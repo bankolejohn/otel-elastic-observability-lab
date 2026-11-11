@@ -23,6 +23,7 @@ Question: did the Stage I alert rules catch the two drills, how fast, and what a
 4. **But a stricter rule is not obviously better at this scale.** With about 13 orders in a window, one failure already drops availability to ~92%, so a pure "availability below 99%" rule would page on a single failed order. Proper SLO alerting (burn rate over longer windows) needs more traffic than this lab produces. The count rule is not broken here; its weakness is that it does not scale with traffic.
 5. **The real blind spot is latency.** The rule counts error documents. The `slow` fault produces none, and SLO 2 (95% of orders under 500 ms) has no alert at all. A slow-but-succeeding incident would be invisible to every rule.
 6. **The ML alert never fired**, including during two drills sending about 120 failing requests per minute. This matches Stage F and Stage 2 and the reference article's lesson: the hard threshold is the dependable catcher, ML is a supplement.
+   **Correction (same day, from `docs/retrospective.md`):** that explanation was incomplete. The ML alert watches `obs_shop_error_spikes`, which has only 17 non-empty buckets and never scored above 0. A different job, `service_request_spikes`, with 598 non-empty buckets, *did* flag the drills (scores up to 99.4). The alert was pointed at the under-trained job. The hard-threshold alert is still the dependable catcher, but ML is not inherently unable to detect bursts; history is what it lacked.
 
 ## Replay of an SLO-style availability query against the real drills (read-only)
 

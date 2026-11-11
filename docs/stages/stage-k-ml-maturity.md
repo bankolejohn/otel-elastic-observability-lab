@@ -81,3 +81,12 @@ difference between normal and anomalous. Remember to stop
 `scripts/steady_traffic.sh` (Ctrl+C or killing its process) before it
 runs indefinitely unattended, especially given the Elastic Cloud trial's
 finite lifetime (see the earlier reminder to check its expiration date).
+
+## Result (2026-11-11)
+
+| job | non-empty buckets | highest score |
+|---|---|---|
+| `service_request_spikes` | 598 of 18,624 (was 64 of 4,294) | 99.4 |
+| `obs_shop_error_spikes` | 17 of 15,870 (was 4 of 1,723) | 0.0 |
+
+The request-volume job matured and flagged the drill bursts. The error job did not: errors are rare by design, so its history stays sparse. The ML alert is wired to the error job and should be pointed at `service_request_spikes`. See `docs/retrospective.md`.
