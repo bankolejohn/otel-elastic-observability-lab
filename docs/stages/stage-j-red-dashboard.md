@@ -119,3 +119,17 @@ The panels query `traces-generic.otel-default`, so they only show data once the 
 - [x] Panels assembled in Kibana and saved; exported to the repo
 - [ ] Reference lines added (99% on Errors, 500ms on Duration)
 - [ ] Error-category and per-span baseline panels added
+
+## v2 (2026-11-11): fixing what the drills exposed
+
+Inspecting the exported v1 showed two problems: panels 0 and 1 held the **same** availability query (so there was no separate Rate panel), and the Duration panel was a *stacked* bar chart, which makes p95 look like p50 + p95. v2 (`kibana/dashboards/obs-shop-red-dashboard-v2.ndjson`, imported as "obs-shop RED dashboard v2", original untouched) has five panels:
+
+| panel | chart | notes |
+|---|---|---|
+| RATE: orders per minute | bar | distinct from Errors |
+| ERRORS: availability % vs 99% SLO | line | the SLO is a constant `slo_target = 99` column plotted as a second line |
+| DURATION: p50 / p95 vs 500 ms SLO | line (not stacked) | `slo_ms = 500` constant line |
+| ERROR CATEGORIES | bar | cause at a glance (the drill-2 MVP) |
+| BASELINE: typical ms per span | horizontal bar | answers "how do I know what's slow?"; excludes browser spans |
+
+The SLO "reference lines" are constant columns inside the ES|QL rather than Lens reference-line layers, because Lens's ES|QL mode does not reliably support reference-line layers. Panels were produced by cloning a panel Kibana itself exported and changing its query/columns, not hand-writing Lens state. All five queries were run against live data first. Visual rendering is confirmed by the user in the Kibana UI.

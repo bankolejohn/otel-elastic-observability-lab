@@ -1,0 +1,19 @@
+{
+  "name": "obs-shop DB connection pool saturated",
+  "rule_type_id": ".es-query",
+  "consumer": "stackAlerts",
+  "schedule": {"interval": "1m"},
+  "params": {
+    "searchType": "esqlQuery",
+    "esqlQuery": {
+      "esql": "FROM metrics-generic.otel-default | WHERE attributes.state == \"used\" AND @timestamp > NOW() - 3 minutes | STATS peak = MAX(metrics.db.client.connections.usage) BY svc = resource.attributes.service.name | WHERE peak >= 5"
+    },
+    "timeField": "@timestamp",
+    "timeWindowSize": 3,
+    "timeWindowUnit": "m",
+    "size": 0,
+    "threshold": [0],
+    "thresholdComparator": ">"
+  },
+  "actions": []
+}

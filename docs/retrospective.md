@@ -85,3 +85,26 @@ What it doesn't show: fluency in writing queries. The responder said plainly tha
 3. Finish the dashboard (reference lines, error-category panel, per-span baseline panel), then re-export it.
 4. Run another blind drill, recording detection and root-cause times.
 5. Work through the ES|QL exercises, then rebuild one stage unaided on a local Elasticsearch (see start-local in the cheat-sheet).
+
+## Gap closure log (2026-11-11, same day)
+
+| gap | status | evidence |
+|---|---|---|
+| 1. ML alert watched the wrong job | **Closed and validated** | Rule now watches `service_request_spikes` (severity >= 50). A healthy 150-second burst (`scripts/burst_load.sh`) scored 99.4 and 95.6 for inventory-service (1,516 spans/min vs a typical ~12) and the alert **fired about 2 minutes in** (13:58:05). |
+| 3. Metrics never used in an investigation | **Closed** | `metrics.db.client.connections.usage` (state `used`) shows inventory-service pinned at exactly **5, its pool size**, for the four minutes of drill 2 (10:43-10:46) and 0 before, after, and in healthy traffic. Saturation was readable from a metric without opening a trace. New alert "DB connection pool saturated" (`kibana/rules/db-pool-saturation.json`): tested on the drill-2 window (flags inventory-service) and on healthy traffic (no rows); it stayed quiet during the healthy burst. |
+| 5. Dashboard unfinished | **Built, awaiting visual confirmation** | `kibana/dashboards/obs-shop-red-dashboard-v2.ndjson` imported as a new dashboard (the original is untouched). See `docs/stages/stage-j-red-dashboard.md`. |
+| 2. Alerts notify nobody | **Open: needs a recipient** | A preconfigured `Elastic-Cloud-SMTP` email connector exists. Waiting on the address to send to. |
+| 4. Single instance / no infra metrics | **Not done** | Needs a stack change that can only be verified against a live cluster. |
+| 6. Drill timings never recorded | **Habit, not code** | Next drill: write down the time at detection and at root cause. |
+
+### New evidence about ML (from the burst test)
+
+The same healthy burst was scored very differently per service:
+
+| service | actual spans/min | typical | score |
+|---|---|---|---|
+| inventory-service | 1,516 | ~11.8 | **99.4** |
+| orders-service | 1,662 | ~0.4 | **1.8** |
+| api-gateway | 910 | ~2.4 | **2.2** |
+
+In drill 1 (three hours earlier) orders-service scored 99.4 for a *smaller* burst (879 spans). Now a burst nearly twice as large scores 1.8. The most likely reading is the article's Lesson 2 happening live: after repeated heavy bursts, the model for those services has started treating bursts as normal, while inventory-service's model has not yet. That is an interpretation of two comparisons, not a proven mechanism, but it is the strongest evidence in the project that an ML score alone cannot be relied on, and why the hard-threshold alerts remain the dependable catchers.
