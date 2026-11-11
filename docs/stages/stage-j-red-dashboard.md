@@ -98,8 +98,24 @@ dashboard. This is the payoff of the whole Stage 2 Streams hierarchy.
    degrading -> the early-warning case, the one you want to catch *before* it
    becomes errors.
 
+## The saved dashboard
+The user assembled the three panels in Kibana and saved them as **obs-shop RED dashboard**. It is exported to `kibana/dashboards/obs-shop-red-dashboard.ndjson` (3 panels with their ES|QL queries embedded, plus the `logs-*` data view; no credentials or hostnames) so it outlives the Elastic Cloud trial.
+
+To restore it in another Kibana: Stack Management -> Saved Objects -> Import, choose the file. Or:
+```bash
+curl -X POST "$KIBANA_ENDPOINT/api/saved_objects/_import?overwrite=true" \
+  -H "Authorization: ApiKey $ELASTIC_API_KEY" -H "kbn-xsrf: true" \
+  --form file=@kibana/dashboards/obs-shop-red-dashboard.ndjson
+```
+The panels query `traces-generic.otel-default`, so they only show data once the stack has been shipping telemetry to that cluster again.
+
+## Lessons from using it in drills
+- The dashboard made all three incidents visible (drills 1-3), but the Errors panel plots `total`, `bad` and `availability_pct` on one axis, which hides the 0-100 availability line. Plot `availability_pct` alone with a 99 reference line.
+- It still lacks a "typical latency per span" baseline panel and an error-category panel; both would have shortened the drills. See `docs/incidents/`.
+
 ## Status
 - [x] All three RED queries built and verified against real data
 - [x] Confirmed they reflect a real injected incident (the 10:52 burst)
-- [ ] Panels assembled in the Kibana UI (manual step, user)
+- [x] Panels assembled in Kibana and saved; exported to the repo
 - [ ] Reference lines added (99% on Errors, 500ms on Duration)
+- [ ] Error-category and per-span baseline panels added

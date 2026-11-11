@@ -118,7 +118,7 @@ extensions, picked up afterward:
 |---|---|---|---|
 | H | **Done** | Fix the query_timeout/pool_exhausted timeout race (ADR-0018) + browser/RUM instrumentation | [stage-h-browser-instrumentation.md](docs/stages/stage-h-browser-instrumentation.md) |
 | I | **Done** | Live-create the three alert rules via Kibana's API | [stage-i-alert-rules.md](docs/stages/stage-i-alert-rules.md) |
-| J | **Queries verified; UI assembly pending** | Build a RED-method Kibana dashboard (Rate/Errors/Duration vs SLOs) | [stage-j-red-dashboard.md](docs/stages/stage-j-red-dashboard.md) |
+| J | **Done** (exported to `kibana/dashboards/`) | RED-method Kibana dashboard (Rate/Errors/Duration vs SLOs), used in 3 blind incident drills | [stage-j-red-dashboard.md](docs/stages/stage-j-red-dashboard.md) |
 | K | **Started, ongoing** | Let the ML jobs (`service_request_spikes`, `obs_shop_error_spikes`) mature with real history | [stage-k-ml-maturity.md](docs/stages/stage-k-ml-maturity.md) |
 
 > **Documentation convention:** a stage isn't considered done until its ADRs

@@ -56,6 +56,6 @@ postmortems (where it all comes together and the learning sticks).
 
 ## Status
 - [x] 1. SLIs/SLOs defined -- `docs/slo.md`, validated live (100% healthy, 56% under injected failure)
-- [~] 2. RED dashboard -- queries built & verified (`docs/stages/stage-j-red-dashboard.md`); Kibana UI assembly pending (manual)
+- [x] 2. RED dashboard -- built in Kibana, used in all three drills, exported to `kibana/dashboards/obs-shop-red-dashboard.ndjson` (`docs/stages/stage-j-red-dashboard.md`). Reference lines and two extra panels still open.
 - [x] 3. Incident drills -- two live blind drills run and written up (`docs/incidents/`): drill 1 partially correct, drill 2 correct. A drill on a silent fault (`slow`) is still worth doing.
 - [x] 4. Alerts reviewed and improved from real drills (`docs/incidents/alert-review-2026-11-11.md`): the volume rule fired ~55s after drill 1 and the ML alert never fired. The review found a real blind spot (no latency alert); a new latency SLO alert was created and **validated by drill 3**, firing 74s after a silent `slow` fault that the error alert correctly could not see.
