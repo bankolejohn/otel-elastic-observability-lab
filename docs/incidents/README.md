@@ -58,4 +58,5 @@ The whole value is in diagnosing *without already knowing the answer*, so:
 `./scripts/run_blind_drill.sh &` picks one of `slow`, `query_timeout`, `connection_failed`, `pool_exhausted` at random, injects it for ~4 minutes under concurrent load, and resets chaos mode automatically. The chosen fault is sealed in `/tmp/obs-drill-answer.txt`; do not read it until a root cause has been committed to.
 
 ## Drills so far
-- [2026-11-11 drill 1 — connection_failed](2026-11-11-drill-1-connection-failed.md)
+- [2026-11-11 drill 1 — connection_failed](2026-11-11-drill-1-connection-failed.md) — partially correct
+- [2026-11-11 drill 2 — pool_exhausted](2026-11-11-drill-2-pool-exhausted.md) — correct
