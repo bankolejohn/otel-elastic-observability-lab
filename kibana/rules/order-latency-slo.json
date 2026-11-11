@@ -1,0 +1,19 @@
+{
+  "name": "obs-shop order latency SLO (p95 > 500ms)",
+  "rule_type_id": ".es-query",
+  "consumer": "stackAlerts",
+  "schedule": {"interval": "1m"},
+  "params": {
+    "searchType": "esqlQuery",
+    "esqlQuery": {
+      "esql": "FROM traces-generic.otel-default | WHERE resource.attributes.service.name == \"api-gateway\" AND name == \"POST /api/orders\" AND attributes.http.status_code == 200 AND @timestamp > NOW() - 5 minutes | EVAL ms = duration / 1000000 | STATS n = COUNT(*), p95 = ROUND(PERCENTILE(ms, 95), 0) | WHERE n >= 5 AND p95 > 500"
+    },
+    "timeField": "@timestamp",
+    "timeWindowSize": 5,
+    "timeWindowUnit": "m",
+    "size": 0,
+    "threshold": [0],
+    "thresholdComparator": ">"
+  },
+  "actions": []
+}

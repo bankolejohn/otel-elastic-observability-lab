@@ -10,7 +10,9 @@
 # Run in the background:  ./scripts/run_blind_drill.sh &
 
 MODES=(slow query_timeout connection_failed pool_exhausted)
-MODE=${MODES[$((RANDOM % ${#MODES[@]}))]}
+# Optional: DRILL_MODE=slow ./scripts/run_blind_drill.sh forces a specific
+# fault (used to target a gap, e.g. testing the latency alert). Default is random.
+MODE=${DRILL_MODE:-${MODES[$((RANDOM % ${#MODES[@]}))]}}
 ANSWER=/tmp/obs-drill-answer.txt
 
 # Always put the system back to normal, even if this script is killed.
