@@ -26,8 +26,13 @@ services:
       # Sourced from the root .env file (gitignored). docker compose
       # substitutes these here; the Collector's own config.yaml then
       # reads them via ${env:...} at its own startup.
-      ELASTIC_ENDPOINT: ${ELASTIC_ENDPOINT}
-      ELASTIC_API_KEY: ${ELASTIC_API_KEY}
+      # The defaults let the stack start with NO Elastic Cloud account: the
+      # Collector refuses to boot if the elasticsearch exporter's endpoint is
+      # empty (verified), so an unreachable placeholder is used instead. In that
+      # mode the Elasticsearch exporter just logs failed exports while the
+      # debug exporter still prints everything to the Collector's console.
+      ELASTIC_ENDPOINT: ${ELASTIC_ENDPOINT:-https://elastic.invalid:443}
+      ELASTIC_API_KEY: ${ELASTIC_API_KEY:-not-set}
     ports:
       - "4317:4317"   # OTLP gRPC
       - "4318:4318"   # OTLP HTTP

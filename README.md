@@ -73,8 +73,12 @@ cp .env.example .env     # then edit .env with real values
 docker compose up -d
 ```
 
-The app runs fully locally without Elastic Cloud — telemetry just prints to
-the Collector's console until you add credentials. See
+The app runs fully locally without Elastic Cloud: the Collector prints
+telemetry to its own console and logs failed exports to a placeholder
+endpoint until you add credentials (verified; an empty endpoint would stop
+the Collector from starting, so `docker-compose.yml` supplies a placeholder).
+**For the complete step-by-step walkthrough, including the Elastic setup, alerts,
+dashboard and incident drills, see [`docs/REPRODUCE.md`](docs/REPRODUCE.md).** See
 [`docs/stages/stage-d-elastic-cloud.md`](docs/stages/stage-d-elastic-cloud.md)
 for how to get the endpoint and API key.
 
@@ -97,6 +101,8 @@ operate it, without reconstructing any of it from memory:
   each non-obvious choice, with alternatives and trade-offs.
 - **[`docs/glossary.md`](docs/glossary.md)** — every concept defined and tied
   back to where it actually shows up in the code.
+- **[`docs/REPRODUCE.md`](docs/REPRODUCE.md)** — reproduce everything step by step,
+  with a check after each part and a troubleshooting table.
 - **[`docs/retrospective.md`](docs/retrospective.md)** — did the project hit its
   objective? An evidence-based audit, including the gaps.
 - **[`docs/esql-cheatsheet.md`](docs/esql-cheatsheet.md)** — learn the ES|QL

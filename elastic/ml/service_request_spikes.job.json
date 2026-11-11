@@ -1,0 +1,22 @@
+{
+  "description": "Detects unusual request-count spikes per service, using raw OTel trace spans as the data source.",
+  "analysis_config": {
+    "bucket_span": "1m",
+    "detectors": [
+      {
+        "detector_description": "Unusually high span count for a given service in a 1m bucket",
+        "function": "high_count",
+        "partition_field_name": "resource.attributes.service.name",
+        "detector_index": 0
+      }
+    ],
+    "influencers": [
+      "resource.attributes.service.name"
+    ],
+    "model_prune_window": "30d"
+  },
+  "data_description": {
+    "time_field": "@timestamp",
+    "time_format": "epoch_ms"
+  }
+}

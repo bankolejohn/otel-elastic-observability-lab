@@ -1,0 +1,20 @@
+{
+  "index_patterns": [
+    "logs.obs-shop.errors.unavailable"
+  ],
+  "template": {
+    "settings": {
+      "index": {
+        "mode": "logsdb"
+      }
+    }
+  },
+  "composed_of": [
+    "obs-shop-errors-mappings"
+  ],
+  "priority": 500,
+  "data_stream": {
+    "hidden": false,
+    "allow_custom_routing": false
+  }
+}

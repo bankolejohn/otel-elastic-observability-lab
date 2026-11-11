@@ -1,0 +1,45 @@
+{
+  "template": {
+    "mappings": {
+      "properties": {
+        "trace_id": {
+          "type": "keyword"
+        },
+        "@timestamp": {
+          "type": "date"
+        },
+        "resource": {
+          "properties": {
+            "attributes": {
+              "properties": {
+                "service.name": {
+                  "type": "keyword"
+                }
+              }
+            }
+          }
+        },
+        "span_id": {
+          "type": "keyword"
+        },
+        "severity_text": {
+          "type": "keyword"
+        },
+        "attributes": {
+          "properties": {
+            "error.category": {
+              "type": "keyword"
+            }
+          }
+        },
+        "body": {
+          "properties": {
+            "text": {
+              "type": "match_only_text"
+            }
+          }
+        }
+      }
+    }
+  }
+}

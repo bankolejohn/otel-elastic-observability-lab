@@ -1,0 +1,21 @@
+{
+  "index_patterns": [
+    "logs.obs-shop.errors"
+  ],
+  "template": {
+    "settings": {
+      "index": {
+        "mode": "logsdb",
+        "default_pipeline": "logs.obs-shop.errors@reroutes"
+      }
+    }
+  },
+  "composed_of": [
+    "obs-shop-errors-mappings"
+  ],
+  "priority": 500,
+  "data_stream": {
+    "hidden": false,
+    "allow_custom_routing": false
+  }
+}

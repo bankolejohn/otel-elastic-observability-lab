@@ -1,0 +1,29 @@
+{
+  "description": "Fan out error logs from the obs-shop.errors parent into per-category child streams. No else clause: anything not matching a known category stays in the parent as a catch-all -- see the reference article Lesson/section 3.",
+  "processors": [
+    {
+      "reroute": {
+        "destination": "logs.obs-shop.errors.query_timeout",
+        "if": "ctx.attributes != null && ctx.attributes[\"error.category\"] == \"query_timeout\""
+      }
+    },
+    {
+      "reroute": {
+        "destination": "logs.obs-shop.errors.connection_failed",
+        "if": "ctx.attributes != null && ctx.attributes[\"error.category\"] == \"connection_failed\""
+      }
+    },
+    {
+      "reroute": {
+        "destination": "logs.obs-shop.errors.pool_exhausted",
+        "if": "ctx.attributes != null && ctx.attributes[\"error.category\"] == \"pool_exhausted\""
+      }
+    },
+    {
+      "reroute": {
+        "destination": "logs.obs-shop.errors.unavailable",
+        "if": "ctx.attributes != null && ctx.attributes[\"error.category\"] == \"unavailable\""
+      }
+    }
+  ]
+}

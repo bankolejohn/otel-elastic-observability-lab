@@ -1,0 +1,11 @@
+{
+  "job_id": "service_request_spikes",
+  "indices": [
+    "traces-generic.otel-default"
+  ],
+  "query": {
+    "match_all": {}
+  },
+  "query_delay": "30s",
+  "frequency": "30s"
+}

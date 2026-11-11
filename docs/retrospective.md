@@ -108,3 +108,7 @@ The same healthy burst was scored very differently per service:
 | api-gateway | 910 | ~2.4 | **2.2** |
 
 In drill 1 (three hours earlier) orders-service scored 99.4 for a *smaller* burst (879 spans). Now a burst nearly twice as large scores 1.8. The most likely reading is the article's Lesson 2 happening live: after repeated heavy bursts, the model for those services has started treating bursts as normal, while inventory-service's model has not yet. That is an interpretation of two comparisons, not a proven mechanism, but it is the strongest evidence in the project that an ML score alone cannot be relied on, and why the hard-threshold alerts remain the dependable catchers.
+
+### A claim we got wrong, found while writing the reproduction guide
+
+The README said the stack "runs fully locally without Elastic Cloud". That had never been tested. Testing it showed that with empty Elastic credentials the Collector **refuses to start** (`endpoint must not be empty`), so a newcomer following the Quick start would have had a broken stack. Fixed by giving `docker-compose.yml` safe placeholder defaults (verified: empty variables fall back to the placeholders, the Collector runs with dummy values, and the real `.env` values still win). Likewise, running the new `scripts/setup_elastic.sh` against the live cluster exposed two bugs in the exported definitions (server-managed fields that Elasticsearch rejects on write) before anyone else met them, and the create paths for ML jobs, datafeeds and alert rules were tested with throwaway copies.

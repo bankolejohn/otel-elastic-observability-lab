@@ -1,0 +1,24 @@
+{
+  "description": "Detects unusual error-count spikes per category, per service, across the logs.obs-shop.errors hierarchy (parent + all child streams).",
+  "analysis_config": {
+    "bucket_span": "1m",
+    "detectors": [
+      {
+        "detector_description": "Spike in a given error category, per service, in a 1m bucket",
+        "function": "high_count",
+        "by_field_name": "attributes.error.category",
+        "partition_field_name": "resource.attributes.service.name",
+        "detector_index": 0
+      }
+    ],
+    "influencers": [
+      "resource.attributes.service.name",
+      "attributes.error.category"
+    ],
+    "model_prune_window": "30d"
+  },
+  "data_description": {
+    "time_field": "@timestamp",
+    "time_format": "epoch_ms"
+  }
+}

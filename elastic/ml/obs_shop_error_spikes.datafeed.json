@@ -1,0 +1,11 @@
+{
+  "job_id": "obs_shop_error_spikes",
+  "indices": [
+    "logs.obs-shop.errors*"
+  ],
+  "query": {
+    "match_all": {}
+  },
+  "query_delay": "30s",
+  "frequency": "30s"
+}
