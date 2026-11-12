@@ -62,4 +62,5 @@ The whole value is in diagnosing *without already knowing the answer*, so:
 - [2026-11-11 drill 2 — pool_exhausted](2026-11-11-drill-2-pool-exhausted.md) — correct
 - [2026-11-11 drill 3 — slow (silent fault)](2026-11-11-drill-3-slow.md) — correct; new latency alert fired, error alert correctly silent
 - [2026-11-11 drill 4 — slow (silent fault, second run)](2026-11-11-drill-4-slow.md) — detection good (T1 about 1 min, three alerts); diagnosis not committed, so not scored
+- [2026-11-12 drill 5 — query_timeout under k6 load](2026-11-12-drill-5-query-timeout-under-load.md) — detected at once; diagnosis not committed, so not scored; cause shown as quieter category than its symptom
 - [Alert review](alert-review-2026-11-11.md)
