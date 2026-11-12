@@ -105,6 +105,7 @@ Pick a window of healthy traffic. Compare any slow span against its `typical_ms`
 
 - **Times are UTC.** Kibana displays your local time (UTC+1 here), so 13:26 on screen is `12:26Z` in a query.
 - **`NOW() - 5 minutes` moves.** Run it after an incident and it returns nothing. "No results" can mean a wrong window, not "no problem". Use fixed times (`@timestamp >= "2026-11-11T12:25:00Z"`) when investigating afterwards.
+- **The Discover time picker also filters ES|QL queries.** In Discover, the picker's range is intersected with your `WHERE`, so a correct query over a fixed incident window returns 0 rows if the picker is on "Last 15 minutes". Set the picker to an absolute range that covers the window (or "Last 3 hours"). Hit during drill 4: 492 orders existed, the queries showed none.
 - **Don't name a column with a reserved word.** `first = MIN(...)` failed with a parsing error; rename it (`earliest`).
 - **`duration` is nanoseconds**, not milliseconds.
 - **Strings use double quotes and `==`:** `name == "POST /api/orders"`.
